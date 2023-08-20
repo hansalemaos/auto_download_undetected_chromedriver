@@ -226,6 +226,7 @@ def download_undetected_chromedriver(
         lookingfor="chromedriver"
         jsonfi=list(fla_tu(json.loads(rs.content)))
         downloadlink=''
+        print(f'system: {for_download}')
         for q in range(len(version)):
             _version = (''.join(list(reversed(''.join(reversed(list(version)))[q:]))))
 
@@ -238,10 +239,9 @@ def download_undetected_chromedriver(
                     and for_download in g.split("/")#[-1]
                     and lookingfor in g
                 ]#[0]
-                #print(downloadlink)
-                #downloadlink=downloadlink[0]
+                print(downloadlink)
+                downloadlink=downloadlink[0]
                 break
-
             except Exception as fe:
                 print(f'{_version} could not be found')
 
@@ -258,7 +258,7 @@ def download_undetected_chromedriver(
                     for q in get_folder_file_complete_path_limit_subdirs(
                     folder_path_for_exe, maxsubdirs=1, withdate=True
                 )
-                    if "chromedriver" in q.file.lower() and q.ext.lower()=='.exe'
+                    if "chrome" in q.file.lower() and q.ext.lower()=='.exe'
                 ],
                 key=lambda x: x.created_ts,
                 reverse=True,
@@ -270,7 +270,7 @@ def download_undetected_chromedriver(
                     for q in get_folder_file_complete_path_limit_subdirs(
                         folder_path_for_exe, maxsubdirs=1, withdate=True
                     )
-                    if "chromedriver" in q.file.lower()
+                    if "chrome" == q.file.lower() or "chromedriver" == q.file.lower()
                 ],
                 key=lambda x: x.created_ts,
                 reverse=True,
