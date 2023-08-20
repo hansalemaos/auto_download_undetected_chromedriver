@@ -12,7 +12,8 @@ import requests
 from downloadunzip import download_and_extract
 from flatten_any_dict_iterable_or_whatsoever import fla_tu
 from list_files_with_timestats import get_folder_file_complete_path_limit_subdirs
-
+from touchtouch import touch
+from getfilenuitkapython import get_filepath
 
 startupinfo = subprocess.STARTUPINFO()
 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -70,6 +71,7 @@ def download_undetected_chromedriver(
     force_update: bool = True,
     dowloadurl: bool = r"https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build-with-downloads.json",
 ) -> str:
+
     r"""
     Args:
         folder_path_for_exe (str): The path to the folder where the ChromeDriver executable will be saved.
@@ -147,7 +149,7 @@ def download_undetected_chromedriver(
         try:
             process = subprocess.Popen(
                 [
-                    "reg",
+                    "reg.exe",
                     "query",
                     "HKEY_CURRENT_USER\\Software\\Google\\Chrome\\BLBeacon",
                     "/v",
@@ -164,7 +166,7 @@ def download_undetected_chromedriver(
                 for j in ["opv", "pv"]:
                     try:
                         command = [
-                            "reg",
+                            "reg.exe",
                             "query",
                             f"HKEY_LOCAL_MACHINE\\Software\\Google\\Update\\Clients\\{i}",
                             "/v",
@@ -193,13 +195,20 @@ def download_undetected_chromedriver(
         input("{} OS is not supported.".format(osname))
         sys.exit()
 
-    versionfile = os.path.join(folderhere, "version.txt")
+    versionfile = os.path.normpath(os.path.join(folderhere, "versionCHROMEDRIVERBACKUP.txt"))
+    touch(versionfile)
     try:
         with open(versionfile, "r", encoding="utf-8") as f:
             previous_version = f.read()
     except Exception:
-        previous_version = "0"
-
+        try:
+            versionfile = get_filepath("versionCHROMEDRIVERBACKUP.txt")
+            with open(versionfile, "r", encoding="utf-8") as f:
+                previous_version = f.read()
+        except Exception:
+            previous_version = "0"
+    if not previous_version:
+        previous_version='0'
     with open(versionfile, "w", encoding="utf-8") as f:
         f.write(version)
 
@@ -214,30 +223,47 @@ def download_undetected_chromedriver(
         print(f"downloading: {dowloadurl}")
         with requests.get(dowloadurl) as res:
             rs = res
+        lookingfor="chromedriver"
+
         downloadlink = [
             x[0]
             for x in list(fla_tu(json.loads(rs.content)))
             if "https" in (g := str(x[0]).lower())
             and version in x[0]
             and for_download in g.split("/")[-1]
-            and "chromedriver" in g
+            and lookingfor in g
         ][0]
+
         print(f"downloading: {downloadlink}")
         download_and_extract(
             url=downloadlink,
             folder=folder_path_for_exe,
         )
-        fo = sorted(
-            [
-                q
-                for q in get_folder_file_complete_path_limit_subdirs(
+        if for_download in ['win32', 'win64']:
+            #lookingfor="chromedriver.exe"
+            fo = sorted(
+                [
+                    q
+                    for q in get_folder_file_complete_path_limit_subdirs(
                     folder_path_for_exe, maxsubdirs=1, withdate=True
                 )
-                if "chromedriver" in q.file.lower()
-            ],
-            key=lambda x: x.created_ts,
-            reverse=True,
-        )[0].path
+                    if "chromedriver" in q.file.lower() and q.ext.lower()=='.exe'
+                ],
+                key=lambda x: x.created_ts,
+                reverse=True,
+            )[0].path
+        else:
+            fo = sorted(
+                [
+                    q
+                    for q in get_folder_file_complete_path_limit_subdirs(
+                        folder_path_for_exe, maxsubdirs=1, withdate=True
+                    )
+                    if "chromedriver" in q.file.lower()
+                ],
+                key=lambda x: x.created_ts,
+                reverse=True,
+            )[0].path
         if os.path.exists(executable_path):
             try:
                 os.remove(executable_path)
