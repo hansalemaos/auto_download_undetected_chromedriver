@@ -224,15 +224,26 @@ def download_undetected_chromedriver(
         with requests.get(dowloadurl) as res:
             rs = res
         lookingfor="chromedriver"
+        jsonfi=list(fla_tu(json.loads(rs.content)))
+        downloadlink=''
+        for q in range(len(version)):
+            _version = (''.join(list(reversed(''.join(reversed(list(version)))[q:]))))
 
-        downloadlink = [
-            x[0]
-            for x in list(fla_tu(json.loads(rs.content)))
-            if "https" in (g := str(x[0]).lower())
-            and version in x[0]
-            and for_download in g.split("/")[-1]
-            and lookingfor in g
-        ][0]
+            try:
+                downloadlink = [
+                    x[0]
+                    for x in jsonfi
+                    if "https" in (g := str(x[0]).lower())
+                    and _version in x[0]
+                    and for_download in g.split("/")#[-1]
+                    and lookingfor in g
+                ]#[0]
+                #print(downloadlink)
+                #downloadlink=downloadlink[0]
+                break
+
+            except Exception as fe:
+                print(f'{_version} could not be found')
 
         print(f"downloading: {downloadlink}")
         download_and_extract(
