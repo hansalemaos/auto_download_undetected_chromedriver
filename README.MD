@@ -2,6 +2,8 @@
 
 ## pip install auto-download-undetected-chromedriver
 
+# Important: the script only can be executed inside a .py file - it doesn't work directly from the console.
+
 [GitHub - ultrafunkamsterdam/undetected-chromedriver: Custom Selenium Chromedriver | Zero-Config | Passes ALL bot mitigation systems (like Distil / Imperva/ Datadadome / CloudFlare IUAM)](https://github.com/ultrafunkamsterdam/undetected-chromedriver)
 
 ```python
