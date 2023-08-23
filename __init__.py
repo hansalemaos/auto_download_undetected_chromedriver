@@ -15,15 +15,7 @@ from list_files_with_timestats import get_folder_file_complete_path_limit_subdir
 from touchtouch import touch
 from getfilenuitkapython import get_filepath
 
-startupinfo = subprocess.STARTUPINFO()
-startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-startupinfo.wShowWindow = subprocess.SW_HIDE
-creationflags = subprocess.CREATE_NO_WINDOW
-invisibledict = {
-    "startupinfo": startupinfo,
-    "creationflags": creationflags,
-    "start_new_session": True,
-}
+
 allsys = ["linux64", "mac-arm64", "mac-x64", "win32", "win64"]
 folderhere = os.path.normpath(os.path.dirname(__file__))
 
@@ -71,7 +63,6 @@ def download_undetected_chromedriver(
     force_update: bool = True,
     dowloadurl: bool = r"https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build-with-downloads.json",
 ) -> str:
-
     r"""
     Args:
         folder_path_for_exe (str): The path to the folder where the ChromeDriver executable will be saved.
@@ -139,6 +130,15 @@ def download_undetected_chromedriver(
             .strip()
         )
     elif osname == "Windows":
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+        creationflags = subprocess.CREATE_NO_WINDOW
+        invisibledict = {
+            "startupinfo": startupinfo,
+            "creationflags": creationflags,
+            "start_new_session": True,
+        }
         if struct.calcsize("P") == 8:
             for_download = "win64"
         else:
@@ -195,7 +195,9 @@ def download_undetected_chromedriver(
         input("{} OS is not supported.".format(osname))
         sys.exit()
 
-    versionfile = os.path.normpath(os.path.join(folderhere, "versionCHROMEDRIVERBACKUP.txt"))
+    versionfile = os.path.normpath(
+        os.path.join(folderhere, "versionCHROMEDRIVERBACKUP.txt")
+    )
     touch(versionfile)
     try:
         with open(versionfile, "r", encoding="utf-8") as f:
@@ -208,7 +210,7 @@ def download_undetected_chromedriver(
         except Exception:
             previous_version = "0"
     if not previous_version:
-        previous_version='0'
+        previous_version = "0"
     with open(versionfile, "w", encoding="utf-8") as f:
         f.write(version)
 
@@ -223,12 +225,12 @@ def download_undetected_chromedriver(
         print(f"downloading: {dowloadurl}")
         with requests.get(dowloadurl) as res:
             rs = res
-        lookingfor="chromedriver"
-        jsonfi=list(fla_tu(json.loads(rs.content)))
-        downloadlink=''
-        print(f'system: {for_download}')
+        lookingfor = "chromedriver"
+        jsonfi = list(fla_tu(json.loads(rs.content)))
+        downloadlink = ""
+        print(f"system: {for_download}")
         for q in range(len(version)):
-            _version = (''.join(list(reversed(''.join(reversed(list(version)))[q:]))))
+            _version = "".join(list(reversed("".join(reversed(list(version)))[q:])))
 
             try:
                 downloadlink = [
@@ -236,29 +238,29 @@ def download_undetected_chromedriver(
                     for x in jsonfi
                     if "https" in (g := str(x[0]).lower())
                     and _version in x[0]
-                    and for_download in g.split("/")#[-1]
+                    and for_download in g.split("/")  # [-1]
                     and lookingfor in g
-                ]#[0]
+                ]  # [0]
                 print(downloadlink)
-                downloadlink=downloadlink[0]
+                downloadlink = downloadlink[0]
                 break
             except Exception as fe:
-                print(f'{_version} could not be found')
+                print(f"{_version} could not be found")
 
         print(f"downloading: {downloadlink}")
         download_and_extract(
             url=downloadlink,
             folder=folder_path_for_exe,
         )
-        if for_download in ['win32', 'win64']:
-            #lookingfor="chromedriver.exe"
+        if for_download in ["win32", "win64"]:
+            # lookingfor="chromedriver.exe"
             fo = sorted(
                 [
                     q
                     for q in get_folder_file_complete_path_limit_subdirs(
-                    folder_path_for_exe, maxsubdirs=1, withdate=True
-                )
-                    if "chrome" in q.file.lower() and q.ext.lower()=='.exe'
+                        folder_path_for_exe, maxsubdirs=1, withdate=True
+                    )
+                    if "chrome" in q.file.lower() and q.ext.lower() == ".exe"
                 ],
                 key=lambda x: x.created_ts,
                 reverse=True,
