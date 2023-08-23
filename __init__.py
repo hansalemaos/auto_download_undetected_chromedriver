@@ -307,7 +307,7 @@ def download_undetected_chromedriver(
         )
 
         # Need this on OSX
-        if osname == "Darwin":
+        if platform.system() == "Darwin":
             os.chmod(executable_path, 0o755)
 
         return executable_path
