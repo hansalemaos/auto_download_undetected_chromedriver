@@ -7,14 +7,14 @@ import struct
 import subprocess
 import sys
 import time
+import shutil
 
 import requests
 from downloadunzip import download_and_extract
 from flatten_any_dict_iterable_or_whatsoever import fla_tu
+from getfilenuitkapython import get_filepath
 from list_files_with_timestats import get_folder_file_complete_path_limit_subdirs
 from touchtouch import touch
-from getfilenuitkapython import get_filepath
-
 
 allsys = ["linux64", "mac-arm64", "mac-x64", "win32", "win64"]
 folderhere = os.path.normpath(os.path.dirname(__file__))
@@ -57,11 +57,11 @@ def is_binary_patched(executable_path=None):
 
 
 def download_undetected_chromedriver(
-    folder_path_for_exe: str,
-    undetected: bool = True,
-    arm: bool = False,
-    force_update: bool = True,
-    dowloadurl: bool = r"https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build-with-downloads.json",
+        folder_path_for_exe: str,
+        undetected: bool = True,
+        arm: bool = False,
+        force_update: bool = True,
+        dowloadurl: bool = r"https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build-with-downloads.json",
 ) -> str:
     r"""
     Args:
@@ -104,7 +104,7 @@ def download_undetected_chromedriver(
         osname = "lin"
         exe_name = ""
         with subprocess.Popen(
-            ["google-chrome", "--version"], stdout=subprocess.PIPE
+                ["google-chrome", "--version"], stdout=subprocess.PIPE
         ) as proc:
             version = (
                 proc.stdout.read().decode("utf-8").replace("Google Chrome", "").strip()
@@ -214,11 +214,22 @@ def download_undetected_chromedriver(
     with open(versionfile, "w", encoding="utf-8") as f:
         f.write(version)
 
-    executable_path = os.path.join(folder_path_for_exe, "chromedriver.exe")
+    # On OSX we need to work on a copy of system's Chrome binary, it's in a protected location.
+    #   otherwise you get error: PermissionError: [Errno 1] Operation not permitted:
+    #   'chromedriver-mac-x64/chromedriver' -> '/Applications/Google Chrome.app/Contents/MacOS/Google\\ Chrome'
+    if platform.system() == "Darwin":
+        source_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        destination_path = os.path.expanduser("~") + "/Desktop/Google Chrome"
+        source_path = source_path.replace('\\', '')
+        shutil.copy(source_path, destination_path)
+        executable_path = destination_path
+    else:
+        executable_path = os.path.join(folder_path_for_exe, "chromedriver.exe")
+
     if (
-        version != previous_version
-        or force_update
-        or not os.path.exists(executable_path)
+            version != previous_version
+            or force_update
+            or not os.path.exists(executable_path)
     ):
         major_version = version.split(".")[0]
         print(f"version: {version} | major_version: {major_version}")
@@ -237,9 +248,9 @@ def download_undetected_chromedriver(
                     x[0]
                     for x in jsonfi
                     if "https" in (g := str(x[0]).lower())
-                    and _version in x[0]
-                    and for_download in g.split("/")  # [-1]
-                    and lookingfor in g
+                       and _version in x[0]
+                       and for_download in g.split("/")  # [-1]
+                       and lookingfor in g
                 ]  # [0]
                 print(downloadlink)
                 downloadlink = downloadlink[0]
@@ -258,8 +269,8 @@ def download_undetected_chromedriver(
                 [
                     q
                     for q in get_folder_file_complete_path_limit_subdirs(
-                        folder_path_for_exe, maxsubdirs=1, withdate=True
-                    )
+                    folder_path_for_exe, maxsubdirs=1, withdate=True
+                )
                     if "chrome" in q.file.lower() and q.ext.lower() == ".exe"
                 ],
                 key=lambda x: x.created_ts,
@@ -270,8 +281,8 @@ def download_undetected_chromedriver(
                 [
                     q
                     for q in get_folder_file_complete_path_limit_subdirs(
-                        folder_path_for_exe, maxsubdirs=1, withdate=True
-                    )
+                    folder_path_for_exe, maxsubdirs=1, withdate=True
+                )
                     if "chrome" == q.file.lower() or "chromedriver" == q.file.lower()
                 ],
                 key=lambda x: x.created_ts,
@@ -294,5 +305,10 @@ def download_undetected_chromedriver(
         print(
             f"To start chromedriver: uc.Chrome(driver_executable_path={executable_path})"
         )
+
+        # Need this on OSX
+        if osname == "Darwin":
+            os.chmod(executable_path, 0o755)
+
         return executable_path
     return executable_path
