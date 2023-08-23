@@ -219,7 +219,7 @@ def download_undetected_chromedriver(
     #   'chromedriver-mac-x64/chromedriver' -> '/Applications/Google Chrome.app/Contents/MacOS/Google\\ Chrome'
     if platform.system() == "Darwin":
         source_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-        destination_path = os.path.expanduser("~") + "/Desktop/Google Chrome"
+        destination_path =  os.path.abspath(folder_path_for_exe) + "/Google Chrome"
         source_path = source_path.replace('\\', '')
         shutil.copy(source_path, destination_path)
         executable_path = destination_path
