@@ -4,6 +4,8 @@
 
 [GitHub - ultrafunkamsterdam/undetected-chromedriver: Custom Selenium Chromedriver | Zero-Config | Passes ALL bot mitigation systems (like Distil / Imperva/ Datadadome / CloudFlare IUAM)](https://github.com/ultrafunkamsterdam/undetected-chromedriver)
 
+### Works on Windows / MacOS thanks to @sdfgsdfgd
+
 ```python
 How to use:
 $pip install auto-download-undetected-chromedriver
